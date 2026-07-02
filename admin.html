@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>KNOX Admin</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Admin override */
+        .admin-header {
+            background: #0a0a12;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1a2e;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-header .logo-text { color: #00d4ff; font-weight: 700; font-size: 1.4rem; }
+        .admin-header .admin-user { color: #888; font-size: 0.9rem; }
+        .admin-header .admin-user span { color: #00d4ff; }
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            padding: 16px 20px;
+            background: #0d0d18;
+        }
+        .admin-stat-card {
+            background: #12121f;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #1a1a2e;
+            text-align: center;
+        }
+        .admin-stat-card .num { font-size: 1.6rem; font-weight: 700; color: #00d4ff; }
+        .admin-stat-card .label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 16px;
+            background: #0a0a12;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .admin-tabs .tab-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .admin-tabs .tab-btn.active { background: #00d4ff22; color: #00d4ff; border: 1px solid #00d4ff44; }
+        .admin-tabs .tab-btn .badge { background: #ff4444; color: #fff; border-radius: 50%; padding: 1px 8px; font-size: 0.65rem; margin-left: 4px; }
+        .admin-panel { padding: 16px 20px; }
+        .admin-panel .panel-title { font-size: 1.2rem; color: #fff; margin-bottom: 12px; }
+        .admin-table-wrap { overflow-x: auto; }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            background: #0d0d18;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .admin-table th { background: #12121f; color: #888; padding: 10px 12px; text-align: left; border-bottom: 1px solid #1a1a2e; }
+        .admin-table td { padding: 8px 12px; border-bottom: 1px solid #12121f; color: #ccc; }
+        .admin-table .btn-sm { padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.7rem; margin: 2px; }
+        .admin-table .btn-approve { background: #00aa55; color: #fff; }
+        .admin-table .btn-reject { background: #ff4444; color: #fff; }
+        .admin-table .btn-edit { background: #ffaa00; color: #000; }
+        .admin-table .btn-delete { background: #cc3333; color: #fff; }
+        .admin-table .btn-copy { background: #333366; color: #fff; }
+        .admin-form { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; align-items: end; }
+        .admin-form .form-group { display: flex; flex-direction: column; }
+        .admin-form .form-group label { font-size: 0.7rem; color: #888; }
+        .admin-form .form-group input, .admin-form .form-group select { padding: 6px 10px; border-radius: 6px; border: 1px solid #1a1a2e; background: #0d0d18; color: #fff; }
+        .admin-form .btn-add { background: #00d4ff; color: #000; padding: 6px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .hidden { display: none !important; }
+        .copy-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #00aa55; color: #fff; padding: 8px 20px; border-radius: 8px; font-size: 0.8rem; z-index: 999; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="admin-header">
+    <div class="logo-text">⚡ KNOX Admin</div>
+    <div class="admin-user">👑 <span id="adminUsername">admin</span> | <button id="adminLogoutBtn" style="background:none;border:none;color:#ff4444;cursor:pointer;">Đăng xuất</button></div>
+</div>
+
+<!-- STATS -->
+<div class="admin-stats" id="adminStats">
+    <div class="admin-stat-card"><div class="num" id="statOrders">0</div><div class="label">Tổng đơn</div></div>
+    <div class="admin-stat-card"><div class="num" id="statPendingOrders">0</div><div class="label">Đơn chờ</div></div>
+    <div class="admin-stat-card"><div class="num" id="statCompletedOrders">0</div><div class="label">Hoàn thành</div></div>
+    <div class="admin-stat-card"><div class="num" id="statPendingDeposits">0</div><div class="label">Nạp chờ</div></div>
+    <div class="admin-stat-card"><div class="num" id="statPendingCards">0</div><div class="label">Thẻ chờ</div></div>
+    <div class="admin-stat-card"><div class="num" id="statOpenTickets">0</div><div class="label">Ticket mở</div></div>
+    <div class="admin-stat-card"><div class="num" id="statUsers">0</div><div class="label">Tổng user</div></div>
+    <div class="admin-stat-card"><div class="num" id="statRevenue">0đ</div><div class="label">Doanh thu</div></div>
+</div>
+
+<!-- TABS -->
+<div class="admin-tabs" id="adminTabs">
+    <button class="tab-btn active" data-tab="tab-dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="tab-orders">📦 Đơn hàng <span class="badge" id="badgeOrders">0</span></button>
+    <button class="tab-btn" data-tab="tab-deposits">💳 Nạp <span class="badge" id="badgeDeposits">0</span></button>
+    <button class="tab-btn" data-tab="tab-cards">💳 Thẻ <span class="badge" id="badgeCards">0</span></button>
+    <button class="tab-btn" data-tab="tab-tickets">🎫 Ticket <span class="badge" id="badgeTickets">0</span></button>
+    <button class="tab-btn" data-tab="tab-users">👥 Users</button>
+    <button class="tab-btn" data-tab="tab-scripts">📜 Scripts</button>
+    <button class="tab-btn" data-tab="tab-deals">🔥 Hot Deals</button>
+    <button class="tab-btn" data-tab="tab-vouchers">🎫 Vouchers</button>
+    <button class="tab-btn" data-tab="tab-reviews">⭐ Reviews</button>
+    <button class="tab-btn" data-tab="tab-broadcast">📢 Broadcast</button>
+    <button class="tab-btn" data-tab="tab-logs">📋 Logs</button>
+    <button class="tab-btn" data-tab="tab-backup">💾 Backup</button>
+</div>
+
+<!-- PANELS -->
+<div class="admin-panel" id="adminPanel">
+
+    <!-- DASHBOARD -->
+    <div class="panel-content active" id="tab-dashboard">
+        <div class="panel-title">📊 Biểu đồ doanh thu</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button class="btn-sm chart-period" data-period="7">7 ngày</button>
+            <button class="btn-sm chart-period active" data-period="30">30 ngày</button>
+            <button class="btn-sm chart-period" data-period="12">12 tháng</button>
+        </div>
+        <canvas id="revenueChart" style="max-height:300px;width:100%;"></canvas>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="panel-content hidden" id="tab-orders">
+        <div class="panel-title">📦 Quản lý đơn hàng</div>
+        <div style="margin-bottom:10px;">
+            <input type="text" id="orderSearch" placeholder="Tìm kiếm..." style="padding:6px 12px;border-radius:6px;border:1px solid #1a1a2e;background:#0d0d18;color:#fff;width:200px;" />
+            <button class="btn-sm" id="exportOrdersBtn" style="background:#00aa55;color:#fff;">📥 Export Excel</button>
+        </div>
+        <div class="admin-table-wrap"><table class="admin-table" id="ordersTable"><thead><tr><th>Mã</th><th>KH</th><th>Dịch vụ</th><th>Giá</th><th>Game acc</th><th>Tiến độ</th><th>Link</th><th>Status</th><th>Hành động</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+    </div>
+
+    <!-- DEPOSITS -->
+    <div class="panel-content hidden" id="tab-deposits">
+        <div class="panel-title">💳 Duyệt nạp tiền</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Mã</th><th>KH</th><th>Số tiền</th><th>PT</th><th>Ghi chú</th><th>TG</th><th>Status</th><th>Hành động</th></tr></thead><tbody id="depositsBody"></tbody></table></div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="panel-content hidden" id="tab-cards">
+        <div class="panel-title">💳 Check thẻ cào</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Mã</th><th>KH</th><th>Nhà mạng</th><th>Mệnh giá</th><th>Seri</th><th>Mã thẻ</th><th>Nhận</th><th>Status</th><th>Hành động</th></tr></thead><tbody id="cardsBody"></tbody></table></div>
+    </div>
+
+    <!-- TICKETS -->
+    <div class="panel-content hidden" id="tab-tickets">
+        <div class="panel-title">🎫 Trả lời ticket</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Mã</th><th>KH</th><th>Tiêu đề</th><th>Nội dung</th><th>Status</th><th>Hành động</th></tr></thead><tbody id="ticketsBody"></tbody></table></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="panel-content hidden" id="tab-users">
+        <div class="panel-title">👥 Quản lý user</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Zalo</th><th>Balance</th><th>Đã nạp</th><th>Đã chi</th><th>VIP</th><th>Hành động</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <div class="panel-content hidden" id="tab-scripts">
+        <div class="panel-title">📜 Quản lý scripts</div>
+        <div class="admin-form"><div class="form-group"><label>Tên</label><input id="scriptName" placeholder="Tên script" /></div><div class="form-group"><label>Game</label><input id="scriptGame" placeholder="Game" /></div><div class="form-group"><label>Giá</label><input id="scriptPrice" placeholder="Giá" /></div><button class="btn-add" id="addScriptBtn">+ Thêm</button></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Tên</th><th>Game</th><th>Giá</th><th>Trạng thái</th><th>Hành động</th></tr></thead><tbody id="scriptsBody"></tbody></table></div>
+    </div>
+
+    <!-- HOT DEALS -->
+    <div class="panel-content hidden" id="tab-deals">
+        <div class="panel-title">🔥 Hot deals</div>
+        <div class="admin-form"><div class="form-group"><label>Tên SP</label><input id="dealName" placeholder="Tên sản phẩm" /></div><div class="form-group"><label>Giá gốc</label><input id="dealPrice" placeholder="Giá gốc" /></div><div class="form-group"><label>% giảm</label><input id="dealPercent" placeholder="%" /></div><div class="form-group"><label>Mô tả</label><input id="dealDesc" placeholder="Mô tả" /></div><button class="btn-add" id="addDealBtn">+ Thêm</button></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>SP</th><th>Giá gốc</th><th>%</th><th>Mô tả</th><th>Active</th><th>Hành động</th></tr></thead><tbody id="dealsBody"></tbody></table></div>
+    </div>
+
+    <!-- VOUCHERS -->
+    <div class="panel-content hidden" id="tab-vouchers">
+        <div class="panel-title">🎫 Vouchers</div>
+        <div class="admin-form"><div class="form-group"><label>Code</label><input id="voucherCode" placeholder="CODE" /></div><div class="form-group"><label>% giảm</label><input id="voucherPercent" placeholder="%" /></div><div class="form-group"><label>Số lượt</label><input id="voucherMax" placeholder="Số lượt" /></div><button class="btn-add" id="addVoucherBtn">+ Thêm</button></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>%</th><th>Đã dùng/Tổng</th><th>Active</th><th>Hành động</th></tr></thead><tbody id="vouchersBody"></tbody></table></div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="panel-content hidden" id="tab-reviews">
+        <div class="panel-title">⭐ Đánh giá</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>User</th><th>Dịch vụ</th><th>Sao</th><th>Comment</th><th>Ngày</th><th>Hành động</th></tr></thead><tbody id="reviewsBody"></tbody></table></div>
+    </div>
+
+    <!-- BROADCAST -->
+    <div class="panel-content hidden" id="tab-broadcast">
+        <div class="panel-title">📢 Gửi Broadcast</div>
+        <div class="admin-form" style="flex-direction:column;align-items:stretch;">
+            <div class="form-group"><label>Tiêu đề</label><input id="broadcastTitle" placeholder="Tiêu đề" /></div>
+            <div class="form-group"><label>Nội dung</label><textarea id="broadcastMessage" rows="4" placeholder="Nội dung..."></textarea></div>
+            <button class="btn-add" id="sendBroadcastBtn">📨 Gửi cho tất cả user</button>
+        </div>
+        <div style="margin-top:16px;"><h4 style="color:#888;">Lịch sử broadcast</h4><div id="broadcastHistory"></div></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="panel-content hidden" id="tab-logs">
+        <div class="panel-title">📋 Log hoạt động</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Action</th><th>Target</th><th>Details</th><th>Thời gian</th></tr></thead><tbody id="logsBody"></tbody></table></div>
+    </div>
+
+    <!-- BACKUP -->
+    <div class="panel-content hidden" id="tab-backup">
+        <div class="panel-title">💾 Backup database</div>
+        <button class="btn-add" id="backupBtn">📥 Tải backup JSON</button>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div class="copy-toast hidden" id="copyToast">📋 Đã copy!</div>
+
+<script src="./lang.js"></script>
+<script src="./app.js"></script>
+<script>
+// Admin-only khởi tạo thêm
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof adminInit === 'function') adminInit();
+});
+</script>
+</body>
+  </html>
