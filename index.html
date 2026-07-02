@@ -1,256 +1,251 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>KNOX Shop - Mod Game</title>
-    <link rel="stylesheet" href="./style.css" />
-    <link rel="manifest" href="./manifest.json" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KNOX SHOP - Mod Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<!-- ====== HEADER ====== -->
-<header class="header">
-    <div class="container header-inner">
-        <div class="logo">
-            <span class="logo-icon">⚡</span>
-            <span class="logo-text">KNOX</span>
-            <span class="logo-shop">Shop</span>
-        </div>
-        <nav class="nav">
-            <a href="#" class="nav-link active" data-tab="home">Trang chủ</a>
-            <a href="#" class="nav-link" data-tab="services">Dịch vụ</a>
-            <a href="#" class="nav-link" data-tab="history">Lịch sử</a>
-            <a href="#" class="nav-link" data-tab="tickets">Hỗ trợ</a>
-        </nav>
-        <div class="header-right">
-            <div class="lang-switch">
-                <button class="lang-btn active" data-lang="vi">VI</button>
-                <button class="lang-btn" data-lang="en">EN</button>
-            </div>
-            <div class="notif-icon" id="notifIcon">
-                🔔
-                <span class="notif-badge" id="notifBadge">0</span>
-            </div>
-            <div class="user-info" id="userInfo">
-                <span class="username" id="displayUsername">Khách</span>
-                <span class="vip-badge" id="displayVip">NEW</span>
-                <span class="balance" id="displayBalance">0đ</span>
-                <button class="btn-login" id="loginBtn">Đăng nhập</button>
-                <button class="btn-register" id="registerBtn">Đăng ký</button>
-            </div>
-            <button class="hamburger" id="hamburgerBtn">☰</button>
-        </div>
-    </div>
-</header>
+<div class="galaxy-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="stars"></div></div>
 
-<!-- ====== HAMBURGER ====== -->
-<div class="hamburger-menu" id="hamburgerMenu">
-    <div class="hamburger-close" id="hamburgerClose">✕</div>
-    <div class="hamburger-user">
-        <div class="hamburger-avatar">👤</div>
-        <div class="hamburger-name" id="hamburgerUsername">Khách</div>
-        <div class="hamburger-vip" id="hamburgerVip">NEW</div>
-        <div class="hamburger-balance" id="hamburgerBalance">0đ</div>
+<!-- NAV -->
+<nav class="navbar">
+    <div class="logo holo-text" style="font-size:1.5rem; cursor:pointer" onclick="window.scrollTo({top:0,behavior:'smooth'})">KNOX SHOP</div>
+    
+    <div class="nav-menu desktop-only">
+        <span class="nav-link" onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="nav_home">Trang chủ</span>
+        <span class="nav-link" id="btn-open-buy" data-i18n="nav_buy">Mua hàng</span>
+        <span class="nav-link" onclick="currentUser ? openModal('deposit-modal') : openModal('login-modal')" data-i18n="deposit">Nạp tiền</span>
+        <span class="nav-link" id="btn-history" data-i18n="history">Lịch sử</span>
+        <span class="nav-link" id="btn-profile" data-i18n="profile">Cá nhân</span>
+        <span class="nav-link balance-display"><span class="balance-val">0đ</span></span>
+        <span class="nav-link" id="notif-btn" style="position:relative">🔔<span id="notif-badge" class="badge badge-danger" style="display:none;position:absolute;top:-5px;right:-10px">0</span></span>
+        <div id="notif-panel" class="card" style="display:none; position:absolute; top:60px; right:50px; width:300px; max-height:300px; overflow-y:auto; z-index:99;"></div>
+        <span class="nav-link auth-guest" id="btn-login" data-i18n="nav_login">Đăng nhập</span>
+        <span class="nav-link auth-guest" id="btn-register" data-i18n="nav_register">Đăng ký</span>
+        <span class="nav-link text-danger auth-user" id="btn-logout" data-i18n="nav_logout">Đăng xuất</span>
+        <span class="nav-link admin-only-nav" style="display:none"><a href="admin.html" class="holo-btn" style="font-size:12px; text-decoration:none">ADMIN</a></span>
     </div>
-    <div class="hamburger-menu-items">
-        <a href="#" data-tab="home">🏠 Trang chủ</a>
-        <a href="#" data-tab="services">🎮 Dịch vụ</a>
-        <a href="#" data-tab="history">📜 Lịch sử</a>
-        <a href="#" data-tab="tickets">🎫 Hỗ trợ</a>
-        <a href="#" data-tab="dashboard">📊 Dashboard</a>
-        <a href="#" id="hamburgerLogout">🚪 Đăng xuất</a>
+
+    <div class="mobile-only" style="display:flex; align-items:center; gap:15px">
+        <span class="balance-display balance-val" style="font-size:14px">0đ</span>
+        <span id="hamburger-btn">☰</span>
+    </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" class="mobile-menu">
+    <span id="close-mobile" style="position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer">✕</span>
+    <div style="margin-top:30px; display:flex; flex-direction:column; gap:20px;">
+        <span class="nav-link auth-guest" onclick="closeMobileMenu(); openModal('login-modal')">Đăng nhập</span>
+        <span class="nav-link auth-guest" onclick="closeMobileMenu(); openModal('register-modal')">Đăng ký</span>
+        <span class="nav-link auth-user" onclick="closeMobileMenu(); openModal('deposit-modal')">Nạp tiền</span>
+        <span class="nav-link auth-user" onclick="closeMobileMenu(); openModal('buy-modal'); openBuyModal()">Mua hàng</span>
+        <span class="nav-link auth-user" onclick="closeMobileMenu(); openModal('history-modal'); loadHistory()">Lịch sử</span>
+        <span class="nav-link auth-user" onclick="closeMobileMenu(); openModal('profile-modal'); loadProfile()">Cá nhân</span>
+        <span class="nav-link admin-only-nav" style="display:none" onclick="window.location.href='admin.html'">Admin Panel</span>
+        <span class="nav-link auth-user text-danger" onclick="logout()">Đăng xuất</span>
     </div>
 </div>
 
-<!-- ====== LOGIN / REGISTER MODAL ====== -->
-<div class="modal-overlay" id="authModal">
-    <div class="modal-box auth-modal">
-        <div class="modal-header">
-            <span class="modal-title" id="authModalTitle">Đăng nhập</span>
-            <button class="modal-close" id="authModalClose">✕</button>
+<!-- CONTENT -->
+<div class="container">
+    <!-- Hero -->
+    <div class="card mt-2 gravity-drop" style="text-align:center; padding:40px 20px;">
+        <h1 class="holo-text" style="font-size:2.5rem; margin-bottom:10px" data-i18n="title">KNOX SHOP</h1>
+        <p style="font-size:1.2rem; color:var(--text-dim)" data-i18n="subtitle">Cửa Hàng Mod Game Uy Tín #1</p>
+        <button class="holo-btn mt-2" onclick="currentUser ? openBuyModal() : openModal('login-modal')">MUA HÀNG NGAY</button>
+    </div>
+
+    <!-- Hot Deals -->
+    <h2 class="section-title holo-text mt-2 gravity-drop">🔥 HOT DEALS</h2>
+    <div class="grid-3 mt-1" id="hot-deals-container">
+        <div class="card gravity-drop"><div class="skeleton"></div></div>
+        <div class="card gravity-drop"><div class="skeleton"></div></div>
+    </div>
+
+    <!-- Services -->
+    <h2 class="section-title holo-text mt-2 gravity-drop">🎮 DỊCH VỤ</h2>
+    <div class="grid-2 mt-1 mb-2">
+        <div class="card gravity-drop">
+            <h3 class="text-accent">Mod Câu Cá Vạn Cân</h3>
+            <p>Mod Skill, Cá, Level, Item, Pet, Kim Cương</p>
+            <p class="mt-1">Giá từ: <b class="text-success">10.000đ</b></p>
+            <button class="holo-btn mt-1" onclick="currentUser ? openBuyModal() : openModal('login-modal')">Mua</button>
         </div>
-        <div class="modal-body" id="authModalBody">
-            <!-- Login Form -->
-            <div id="loginForm">
-                <div class="form-group">
-                    <label>Tên đăng nhập</label>
-                    <input type="text" id="loginUsername" placeholder="Nhập tên đăng nhập" />
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu</label>
-                    <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" />
-                </div>
-                <button class="btn-primary" id="loginSubmitBtn">Đăng nhập</button>
-                <div style="margin-top:12px;text-align:center;color:#888;font-size:0.85rem;">
-                    Chưa có tài khoản? <a href="#" id="switchToRegister" style="color:#00d4ff;">Đăng ký ngay</a>
-                </div>
-            </div>
-            <!-- Register Form -->
-            <div id="registerForm" style="display:none;">
-                <div class="form-group">
-                    <label>Tên đăng nhập (>=3 ký tự)</label>
-                    <input type="text" id="regUsername" placeholder="Nhập tên đăng nhập" />
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu (>=6 ký tự)</label>
-                    <input type="password" id="regPassword" placeholder="Nhập mật khẩu" />
-                </div>
-                <div class="form-group">
-                    <label>Xác nhận mật khẩu</label>
-                    <input type="password" id="regConfirmPassword" placeholder="Xác nhận mật khẩu" />
-                </div>
-                <div class="form-group">
-                    <label>Email (tùy chọn)</label>
-                    <input type="email" id="regEmail" placeholder="Nhập email" />
-                </div>
-                <div class="form-group">
-                    <label>Mã giới thiệu (tùy chọn)</label>
-                    <input type="text" id="regReferral" placeholder="Nhập mã giới thiệu" />
-                </div>
-                <button class="btn-primary" id="registerSubmitBtn">Đăng ký</button>
-                <div style="margin-top:12px;text-align:center;color:#888;font-size:0.85rem;">
-                    Đã có tài khoản? <a href="#" id="switchToLogin" style="color:#00d4ff;">Đăng nhập</a>
-                </div>
-            </div>
+        <div class="card gravity-drop">
+            <h3 class="text-accent">Script Roblox</h3>
+            <p>Sniper Arena và các script an toàn</p>
+            <p class="mt-1">Giá từ: <b class="text-success">15.000đ</b></p>
+            <button class="holo-btn mt-1" onclick="currentUser ? openBuyModal() : openModal('login-modal')">Mua</button>
         </div>
+        <div class="card gravity-drop">
+            <h3 class="text-accent">Bản Mod (Tự Mod)</h3>
+            <p>Hướng dẫn & Công cụ tự mod</p>
+            <p class="mt-1">Giá: <b class="text-success">85.000đ</b></p>
+            <button class="holo-btn mt-1" onclick="currentUser ? openBuyModal() : openModal('login-modal')">Mua</button>
+        </div>
+        <div class="card gravity-drop">
+            <h3 class="text-accent">Câu Chung (Theo Giờ)</h3>
+            <p>Dịch vụ cày thuê an toàn</p>
+            <p class="mt-1">Giá: <b class="text-success">20.000đ/giờ</b></p>
+            <button class="holo-btn mt-1" onclick="currentUser ? openBuyModal() : openModal('login-modal')">Mua</button>
+        </div>
+    </div>
+    
+    <!-- Top Nap -->
+    <h2 class="section-title holo-text mt-2 gravity-drop">🏆 TOP NẠP THÁNG</h2>
+    <div class="card mt-1 mb-2 gravity-drop" id="top-nap-container">
+        <div class="skeleton"></div>
     </div>
 </div>
 
-<!-- ====== MAIN CONTENT ====== -->
-<main class="main" id="mainContent">
+<!-- MODALS -->
+<!-- Login -->
+<div id="login-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('login-modal')">✕</span>
+        <h2 class="text-accent">Đăng Nhập</h2>
+        <div class="form-group mt-1"><input type="text" id="login-user" class="form-input" placeholder="Username"></div>
+        <div class="form-group"><input type="password" id="login-pass" class="form-input" placeholder="Mật khẩu"></div>
+        <button class="holo-btn" style="width:100%" onclick="handleLogin()">Đăng Nhập</button>
+        <p class="mt-1" style="text-align:center; font-size:14px">Chưa có tài khoản? <span class="text-accent" style="cursor:pointer" onclick="closeModal('login-modal'); openModal('register-modal')">Đăng ký</span></p>
+        <p class="mt-1" style="text-align:center; font-size:12px; color:var(--text-dim)">Quên mật khẩu? Liên hệ admin Zalo/Telegram</p>
+    </div>
+</div>
 
-    <!-- ====== TAB: HOME ====== -->
-    <section class="tab-content active" id="tab-home">
-        <div class="container">
+<!-- Register -->
+<div id="register-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('register-modal')">✕</span>
+        <h2 class="text-accent">Đăng Ký</h2>
+        <div class="form-group mt-1"><input type="text" id="reg-user" class="form-input" placeholder="Username (>=3 ký tự)"></div>
+        <div class="form-group"><input type="email" id="reg-email" class="form-input" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="reg-pass" class="form-input" placeholder="Mật khẩu (>=6 ký tự)"></div>
+        <div class="form-group"><input type="password" id="reg-cpass" class="form-input" placeholder="Xác nhận mật khẩu"></div>
+        <div class="form-group"><input type="text" id="reg-ref" class="form-input" placeholder="Mã giới thiệu (nếu có)"></div>
+        <button class="holo-btn" style="width:100%" onclick="handleRegister()">Đăng Ký</button>
+    </div>
+</div>
 
-            <!-- BANNER GIỐNG ẢNH -->
-            <div class="welcome-banner">
-                <h1>🔥 KNOX Shop - Mod Game & Script</h1>
-                <p>Uy tín - Chất lượng - Giá tốt</p>
-                <div class="stats-mini">
-                    <span>👥 1+ Thành viên</span>
-                    <span>📦 12 Sản phẩm</span>
-                    <span>📦 2+ Đơn hàng</span>
-                </div>
+<!-- Buy -->
+<div id="buy-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('buy-modal')">✕</span>
+        <h2 class="text-accent">Mua Hàng</h2>
+        <div class="form-group mt-1">
+            <label>Dịch vụ</label>
+            <select id="service-select" class="form-input"></select>
+        </div>
+        <div class="form-group">
+            <label>Giá: <span id="base-price" class="text-success">0đ</span></label><br>
+            <label>Thành tiền: <span id="final-price" class="text-accent">0đ</span></label>
+        </div>
+        <div class="form-group"><input type="text" id="game-user" class="form-input" placeholder="Tài khoản game *"></div>
+        <div class="form-group"><input type="text" id="game-pass" class="form-input" placeholder="Mật khẩu game *"></div>
+        <div class="form-group" style="display:flex; gap:10px">
+            <input type="text" id="voucher-input" class="form-input" placeholder="Mã giảm giá">
+            <button class="holo-btn" onclick="applyVoucher()">Áp dụng</button>
+        </div>
+        <div class="form-group"><textarea id="order-note" class="form-input" placeholder="Ghi chú thêm"></textarea></div>
+        <button class="holo-btn" style="width:100%" onclick="handleOrder()">ĐẶT HÀNG</button>
+    </div>
+</div>
+
+<!-- Deposit -->
+<div id="deposit-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('deposit-modal')">✕</span>
+        <h2 class="text-accent">Nạp Tiền</h2>
+        
+        <div style="margin-top:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+            <h3>🏦 Ngân Hàng (0% phí)</h3>
+            <p style="font-size:12px; color:var(--text-dim)">Nội dung CK cố định: NAP + [Mã NAP của bạn]. VD: NAP18538</p>
+            <div class="form-group mt-1">
+                <select id="dep-amount" class="form-input">
+                    <option value="10000">10.000đ</option><option value="20000">20.000đ</option><option value="50000">50.000đ</option>
+                    <option value="100000">100.000đ</option><option value="200000">200.000đ</option><option value="500000">500.000đ</option>
+                </select>
             </div>
-
-            <!-- HOT DEALS -->
-            <div class="section-title"><h2>🔥 HOT DEALS</h2></div>
-            <div class="hot-deals-grid" id="hotDealsGrid"></div>
-
-            <!-- DANH SÁCH SẢN PHẨM - GIỐNG ẢNH -->
-            <div class="section-title"><h2>🎮 Tất cả sản phẩm</h2></div>
-            <div class="products-grid" id="productsGrid"></div>
-
-            <!-- TOP NẠP -->
-            <div class="section-title"><h2>🏆 Top nạp tháng</h2></div>
-            <div class="top-deposit" id="topDeposit"></div>
-
+            <button class="holo-btn" style="width:100%" onclick="handleBankDeposit()">Tạo lệnh nạp</button>
         </div>
-    </section>
 
-    <!-- ====== TAB: SERVICES ====== -->
-    <section class="tab-content" id="tab-services">
-        <div class="container">
-            <h2>🎮 Mua hàng</h2>
-            <div class="buy-form">
-                <div class="form-group">
-                    <label>Chọn dịch vụ</label>
-                    <select id="serviceSelect">
-                        <option value="">-- Chọn dịch vụ --</option>
-                        <option value="Mod Skill">Mod Skill - 10.000đ</option>
-                        <option value="Mod Cá">Mod Cá - 20.000đ</option>
-                        <option value="Mod Level">Mod Level - 10.000đ</option>
-                        <option value="Mod Item">Mod Item - 20.000đ</option>
-                        <option value="Mod Pet">Mod Pet - 30.000đ</option>
-                        <option value="Mod Kim Cương">Mod Kim Cương - 30.000đ</option>
-                        <option value="Mod Điếu Hồn">Mod Điếu Hồn - 30.000đ</option>
-                        <option value="Câu Cá Vạn Cân Full">Câu Cá Vạn Cân Full - Liên hệ</option>
-                        <option value="Sniper Arena">Sniper Arena - 15.000đ</option>
-                        <option value="Bản Mod (Tự Mod)">Bản Mod (Tự Mod) - 85.000đ</option>
-                        <option value="Câu Chung (Theo Giờ)">Câu Chung (Theo Giờ) - 20.000đ/giờ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Giá</label>
-                    <input type="text" id="servicePrice" readonly value="0đ" />
-                </div>
-                <div class="form-group">
-                    <label>Tài khoản game</label>
-                    <input type="text" id="gameUsername" placeholder="Nhập tài khoản game" />
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu game</label>
-                    <input type="password" id="gamePassword" placeholder="Nhập mật khẩu game" />
-                </div>
-                <div class="form-group">
-                    <label>Mã giảm giá</label>
-                    <input type="text" id="voucherInput" placeholder="Nhập mã giảm giá" />
-                    <button class="btn-small" id="applyVoucherBtn">Áp dụng</button>
-                    <span id="voucherResult"></span>
-                </div>
-                <div class="form-group">
-                    <label>Ghi chú</label>
-                    <textarea id="orderNote" placeholder="Ghi chú thêm..."></textarea>
-                </div>
-                <button class="btn-primary" id="buyBtn">🛒 Mua ngay</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ====== TAB: HISTORY ====== -->
-    <section class="tab-content" id="tab-history">
-        <div class="container">
-            <h2>📜 Lịch sử giao dịch</h2>
-            <div class="history-tabs">
-                <button class="history-tab active" data-history="orders">Đơn hàng</button>
-                <button class="history-tab" data-history="deposits">Nạp tiền</button>
-                <button class="history-tab" data-history="cards">Thẻ cào</button>
-            </div>
-            <div class="history-list" id="historyList"></div>
-        </div>
-    </section>
-
-    <!-- ====== TAB: TICKETS ====== -->
-    <section class="tab-content" id="tab-tickets">
-        <div class="container">
-            <h2>🎫 Hỗ trợ</h2>
-            <button class="btn-primary" id="newTicketBtn">➕ Tạo ticket mới</button>
-            <div class="ticket-list" id="ticketList"></div>
-        </div>
-    </section>
-
-    <!-- ====== TAB: DASHBOARD ====== -->
-    <section class="tab-content" id="tab-dashboard">
-        <div class="container">
-            <h2>📊 Dashboard cá nhân</h2>
-            <div class="dashboard-stats" id="dashboardStats"></div>
-        </div>
-    </section>
-
-</main>
-
-<!-- ====== CHAT ====== -->
-<div class="chat-widget" id="chatWidget">
-    <div class="chat-bubble" id="chatBubble">💬<span class="chat-pulse"></span></div>
-    <div class="chat-box" id="chatBox">
-        <div class="chat-box-header"><span>📞 Liên hệ</span><button class="chat-close" id="chatClose">✕</button></div>
-        <div class="chat-box-body">
-            <a href="https://zalo.me/0564721862" target="_blank" class="chat-btn zalo">💬 Zalo</a>
-            <a href="https://t.me/ngonthe666" target="_blank" class="chat-btn telegram">✈️ Telegram</a>
+        <div style="margin-top:15px;">
+            <h3>💳 Thẻ Cào (Chiết khấu 15%)</h3>
+            <div class="form-group mt-1"><select id="card-telco" class="form-input"><option>Viettel</option><option>Mobi</option><option>Vina</option><option>Vietnamobile</option></select></div>
+            <div class="form-group"><select id="card-value" class="form-input"><option value="10000">10K</option><option value="20000">20K</option><option value="50000">50K</option><option value="100000">100K</option></select></div>
+            <div class="form-group"><input type="text" id="card-serial" class="form-input" placeholder="Số Seri"></div>
+            <div class="form-group"><input type="text" id="card-code" class="form-input" placeholder="Mã thẻ"></div>
+            <button class="holo-btn" style="width:100%" onclick="handleCardDeposit()">Gửi thẻ</button>
         </div>
     </div>
 </div>
 
-<!-- ====== TOAST ====== -->
-<div class="toast-container" id="toastContainer"></div>
+<!-- History -->
+<div id="history-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width:800px">
+        <span class="modal-close" onclick="closeModal('history-modal')">✕</span>
+        <h2 class="text-accent">Lịch Sử Giao Dịch</h2>
+        <div id="history-content" class="mt-1"></div>
+    </div>
+</div>
 
-<!-- ====== SCRIPTS ====== -->
-<script src="./lang.js"></script>
-<script src="./app.js"></script>
+<!-- Profile -->
+<div id="profile-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('profile-modal')">✕</span>
+        <h2 class="text-accent">Cá Nhân & Bảo Mật</h2>
+        <div id="profile-content" class="mt-1"></div>
+    </div>
+</div>
 
+<!-- Chat Widget -->
+<div id="chat-widget" class="chat-widget" style="display:none">
+    <div id="chat-box" class="chat-box">
+        <h4 class="text-accent">Liên Hệ Support</h4>
+        <a href="https://zalo.me/0564721862" target="_blank" class="holo-btn mt-1" style="display:block; text-align:center; text-decoration:none; margin-bottom:10px">Zalo</a>
+        <a href="https://t.me/ngonthe666" target="_blank" class="holo-btn mt-1" style="display:block; text-align:center; text-decoration:none; background:linear-gradient(90deg, #0088cc, #00bbff)">Telegram</a>
+    </div>
+    <button class="chat-btn" onclick="document.getElementById('chat-box').classList.toggle('open')">💬</button>
+</div>
+
+<script src="lang.js"></script>
+<script src="app.js"></script>
+<script>
+    // Dynamic loads
+    async function loadHomeData() {
+        try {
+            // Hot Deals
+            const { data: deals } = await supabase.from('hot_deals').select('*').eq('active', true);
+            const dc = document.getElementById('hot-deals-container');
+            if(deals && deals.length > 0) {
+                dc.innerHTML = deals.map(d => `
+                    <div class="card gravity-drop visible">
+                        <span class="badge badge-vip" style="position:absolute; top:10px; right:10px">-${d.discount_percent}%</span>
+                        <h3 class="text-accent">${d.product_name}</h3>
+                        <p><span style="text-decoration:line-through; color:var(--text-dim)">${formatCurrency(d.original_price)}</span> <b class="text-success">${formatCurrency(d.original_price * (100-d.discount_percent)/100)}</b></p>
+                        <button class="holo-btn mt-1" onclick="currentUser ? openBuyModal() : openModal('login-modal')">Mua ngay</button>
+                    </div>
+                `).join('');
+            } else { dc.innerHTML = '<p>Chưa có deal nào</p>'; }
+
+            // Top Nap
+            const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
+            const { data: tops } = await supabase.from('deposits').select('username, amount').eq('status', 'completed').gte('created_at', startOfMonth.toISOString());
+            let topMap = {};
+            (tops||[]).forEach(t => { topMap[t.username] = (topMap[t.username]||0) + t.amount; });
+            let sorted = Object.entries(topMap).sort((a,b) => b[1]-a[1]).slice(0,10);
+            const tc = document.getElementById('top-nap-container');
+            const medals = ['🥇','🥈','🥉'];
+            tc.innerHTML = sorted.map((t,i) => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${medals[i]||''} ${t[0].substring(0,3)}***</span><span class="text-accent">${formatCurrency(t[1])}</span></div>`).join('') || '<p>Chưa có dữ liệu</p>';
+            
+        } catch(e) { console.error(e); }
+    }
+    loadHomeData();
+</script>
 </body>
-                    </html>
+            </html>
