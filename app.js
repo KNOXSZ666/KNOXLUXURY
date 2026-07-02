@@ -1074,3 +1074,196 @@ document.addEventListener('DOMContentLoaded', function() {
   
   console.log('🔥 KNOX Shop loaded successfully!');
 });
+// =============================================
+// KNOX SHOP - APP.JS (Bổ sung Auth Form)
+// =============================================
+
+// ... (giữ nguyên toàn bộ code cũ, thêm phần dưới)
+
+// ====== AUTH FORM HANDLERS ======
+function initAuthForms() {
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const authModal = document.getElementById('authModal');
+    const authModalClose = document.getElementById('authModalClose');
+    const switchToRegister = document.getElementById('switchToRegister');
+    const switchToLogin = document.getElementById('switchToLogin');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const authModalTitle = document.getElementById('authModalTitle');
+
+    // Mở modal login
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            authModalTitle.textContent = 'Đăng nhập';
+            authModal.classList.add('open');
+        });
+    }
+
+    // Mở modal register
+    if (registerBtn) {
+        registerBtn.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            authModalTitle.textContent = 'Đăng ký';
+            authModal.classList.add('open');
+        });
+    }
+
+    // Đóng modal
+    if (authModalClose) {
+        authModalClose.addEventListener('click', () => authModal.classList.remove('open'));
+    }
+    authModal?.addEventListener('click', (e) => {
+        if (e.target === authModal) authModal.classList.remove('open');
+    });
+
+    // Switch forms
+    if (switchToRegister) {
+        switchToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            authModalTitle.textContent = 'Đăng ký';
+        });
+    }
+    if (switchToLogin) {
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            authModalTitle.textContent = 'Đăng nhập';
+        });
+    }
+
+    // Login submit
+    document.getElementById('loginSubmitBtn')?.addEventListener('click', async () => {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!username || !password) return showToast('Vui lòng nhập đầy đủ', 'error');
+        
+        // Gọi hàm login đã có
+        await doLogin(username, password);
+        authModal.classList.remove('open');
+    });
+
+    // Register submit
+    document.getElementById('registerSubmitBtn')?.addEventListener('click', async () => {
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value.trim();
+        const confirm = document.getElementById('regConfirmPassword').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const referral = document.getElementById('regReferral').value.trim();
+
+        if (username.length < 3) return showToast('Tên đăng nhập >=3 ký tự', 'error');
+        if (password.length < 6) return showToast('Mật khẩu >=6 ký tự', 'error');
+        if (password !== confirm) return showToast('Mật khẩu xác nhận không khớp', 'error');
+        if (username.toLowerCase() === 'admin') return showToast('Không được đăng ký tên admin', 'error');
+
+        await doRegister(username, password, email, referral);
+        authModal.classList.remove('open');
+    });
+
+    // Enter key support
+    document.getElementById('loginPassword')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('loginSubmitBtn')?.click();
+    });
+    document.getElementById('regConfirmPassword')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('registerSubmitBtn')?.click();
+    });
+}
+
+// Hàm login thực tế
+async function doLogin(username, password) {
+    if (username === ADMIN_USERNAME) {
+        if (password === ADMIN_PASSWORD) {
+            localStorage.setItem('knox_admin', 'true');
+            window.location.href = './admin.html';
+            return;
+        } else {
+            return showToast('Mật khẩu Admin sai!', 'error');
+        }
+    }
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+    if (error || !data) return showToast('Tên không tồn tại', 'error');
+    if (data.password !== password) return showToast('Mật khẩu sai', 'error');
+    if (data.is_locked) return showToast('Tài khoản bị khóa!', 'error');
+
+    currentUser = data;
+    localStorage.setItem('knox_user', JSON.stringify(data));
+    
+    await supabase.from('login_history').insert([{
+        username: data.username,
+        ip: 'client',
+        device: navigator.userAgent,
+        browser: navigator.userAgent,
+        success: true,
+        created_at: new Date().toISOString()
+    }]);
+
+    await supabase.from('users')
+        .update({ last_login: new Date().toISOString(), last_ip: 'client', last_device: navigator.userAgent })
+        .eq('username', data.username);
+
+    showToast('Đăng nhập thành công!', 'success');
+    updateUI();
+    loadProducts();
+    loadHistory();
+    loadTickets();
+    loadDashboard();
+}
+
+// Hàm register thực tế
+async function doRegister(username, password, email, referral) {
+    const refCode = 'REF' + String(Math.floor(100000 + Math.random() * 900000));
+    const { error } = await supabase
+        .from('users')
+        .insert([{
+            username,
+            password,
+            email: email || '',
+            referral_code: refCode,
+            referred_by: referral || null,
+            balance: 0,
+            total_spent: 0,
+            total_deposited: 0,
+            vip_level: 'NEW',
+            is_locked: false,
+            created_at: new Date().toISOString()
+        }]);
+
+    if (error) return showToast('Lỗi: ' + error.message, 'error');
+    showToast('Đăng ký thành công! Mã giới thiệu: ' + refCode, 'success');
+}
+
+// ====== UPDATE UI (ẩn/hiện nút login/register) ======
+// Ghi đè hàm updateUI
+const originalUpdateUI = updateUI;
+updateUI = function() {
+    originalUpdateUI();
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    if (currentUser) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (registerBtn) registerBtn.style.display = 'none';
+    } else {
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (registerBtn) registerBtn.style.display = 'inline-block';
+    }
+};
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', function() {
+    // ... giữ nguyên init cũ, thêm:
+    initAuthForms();
+    checkAuth();
+    // ... phần còn lại
+});
