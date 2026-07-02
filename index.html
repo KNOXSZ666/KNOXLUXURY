@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNOX Shop - Mod Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="galaxy-bg">
+        <div class="stars"></div>
+        <!-- Particles added via JS -->
+    </div>
+
+    <header>
+        <div class="brand">KNOX SHOP</div>
+        
+        <div class="nav-links">
+            <a href="#home" data-i18n="home">Trang Chủ</a>
+            <a href="#products" data-i18n="products">Sản Phẩm</a>
+            <a href="#top" data-i18n="top_deposit">Top Nạp</a>
+        </div>
+
+        <div class="user-panel" id="desktop-user-panel">
+            <!-- Render via JS -->
+        </div>
+
+        <div class="menu-toggle" id="menu-toggle">☰</div>
+    </header>
+
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="close-menu" id="close-menu">×</div>
+        <div id="mobile-user-panel" style="margin-top: 30px; margin-bottom:30px; border-bottom: 1px solid #333; padding-bottom: 20px;">
+            <!-- Mobile user tools -->
+        </div>
+        <a href="#home" class="mobile-link" data-i18n="home">Trang Chủ</a>
+        <a href="#products" class="mobile-link" data-i18n="products">Sản Phẩm</a>
+        <a href="#top" class="mobile-link" data-i18n="top_deposit">Top Nạp</a>
+        <a href="#" onclick="toggleLang()" style="margin-top:20px; color:#00e5ff;">VI / EN</a>
+    </div>
+
+    <main class="container" id="home">
+        
+        <!-- Welcome Hero -->
+        <div class="text-center" style="margin-bottom: 50px;">
+            <h1 style="font-size: 3em; margin-bottom: 10px; background: var(--holo-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">KNOX SHOP</h1>
+            <p style="font-size: 1.2em; color: #aaa;">Dịch Vụ Mod Game & Script Chuyên Nghiệp</p>
+        </div>
+
+        <!-- Hot Deals -->
+        <h2 class="section-title gravity-drop">HOT DEALS</h2>
+        <div class="product-grid gravity-drop" id="hot-deals-grid">
+            <div class="skeleton" style="height: 200px;"></div>
+            <div class="skeleton" style="height: 200px;"></div>
+        </div>
+
+        <!-- Products -->
+        <h2 class="section-title gravity-drop mt-20" id="products" data-i18n="products">Sản Phẩm</h2>
+        <div class="product-grid gravity-drop" id="products-grid">
+            <div class="skeleton" style="height: 200px;"></div>
+            <div class="skeleton" style="height: 200px;"></div>
+            <div class="skeleton" style="height: 200px;"></div>
+            <div class="skeleton" style="height: 200px;"></div>
+        </div>
+
+        <!-- Top Nạp -->
+        <h2 class="section-title gravity-drop mt-20" id="top" data-i18n="top_deposit">Top Nạp Tháng</h2>
+        <div class="cyber-card gravity-drop" style="padding:0;">
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Top</th><th>Khách Hàng</th><th>Tổng Nạp</th></tr></thead>
+                    <tbody id="top-deposit-body">
+                        <tr><td colspan="3" class="text-center">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget hidden" id="chat-widget">
+        <div class="chat-bubble" id="chat-bubble">
+            <svg viewBox="0 0 24 24"><path d="M12,2C6.48,2 2,5.58 2,10c0,2.56 1.48,4.82 3.75,6.17C5.58,17.48 5,19 5,19c0,0 2.87,-1.05 4.39,-2.19C10.25,16.93 11.11,17 12,17c5.52,0 10,-3.58 10,-8C22,5.58 17.52,2 12,2Z"/></svg>
+        </div>
+        <div class="chat-menu" id="chat-menu">
+            <a href="https://zalo.me/0564721862" target="_blank">Zalo Admin</a>
+            <a href="https://t.me/ngonthe666" target="_blank">Telegram Admin</a>
+        </div>
+    </div>
+
+    <!-- Modals Container (Injected by JS) -->
+    <div id="modals-container"></div>
+    <div id="toast-container"></div>
+
+    <script src="lang.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
