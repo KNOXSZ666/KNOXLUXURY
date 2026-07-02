@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>KNOX Shop - Mod Game</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="manifest" href="./manifest.json" />
+    <!-- Chart.js cho biểu đồ admin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ====== HEADER / NAVBAR ====== -->
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">KNOX</span>
+                <span class="logo-shop">Shop</span>
+            </div>
+
+            <nav class="nav">
+                <a href="#" class="nav-link active" data-tab="home">Trang chủ</a>
+                <a href="#" class="nav-link" data-tab="services">Dịch vụ</a>
+                <a href="#" class="nav-link" data-tab="history">Lịch sử</a>
+                <a href="#" class="nav-link" data-tab="tickets">Hỗ trợ</a>
+            </nav>
+
+            <div class="header-right">
+                <div class="lang-switch">
+                    <button class="lang-btn active" data-lang="vi">VI</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <div class="notif-icon" id="notifIcon">
+                    🔔
+                    <span class="notif-badge" id="notifBadge">0</span>
+                </div>
+                <div class="user-info" id="userInfo">
+                    <span class="username" id="displayUsername">Khách</span>
+                    <span class="vip-badge" id="displayVip">NEW</span>
+                    <span class="balance" id="displayBalance">0đ</span>
+                </div>
+                <button class="hamburger" id="hamburgerBtn">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====== HAMBURGER MENU (Mobile) ====== -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="hamburger-close" id="hamburgerClose">✕</div>
+        <div class="hamburger-user">
+            <div class="hamburger-avatar">👤</div>
+            <div class="hamburger-name" id="hamburgerUsername">Khách</div>
+            <div class="hamburger-vip" id="hamburgerVip">NEW</div>
+            <div class="hamburger-balance" id="hamburgerBalance">0đ</div>
+        </div>
+        <div class="hamburger-menu-items">
+            <a href="#" data-tab="home">🏠 Trang chủ</a>
+            <a href="#" data-tab="services">🎮 Dịch vụ</a>
+            <a href="#" data-tab="history">📜 Lịch sử</a>
+            <a href="#" data-tab="tickets">🎫 Hỗ trợ</a>
+            <a href="#" data-tab="dashboard">📊 Dashboard</a>
+            <a href="#" id="hamburgerLogout">🚪 Đăng xuất</a>
+        </div>
+    </div>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <main class="main" id="mainContent">
+
+        <!-- ====== TAB: HOME ====== -->
+        <section class="tab-content active" id="tab-home">
+            <div class="container">
+
+                <!-- BANNER / CHÀO MỪNG -->
+                <div class="welcome-banner">
+                    <h1>🔥 KNOX Shop - Mod Game & Script</h1>
+                    <p>Uy tín - Chất lượng - Giá tốt</p>
+                    <div class="stats-mini">
+                        <span>👥 1+ Thành viên</span>
+                        <span>📦 12 Sản phẩm</span>
+                        <span>📦 2+ Đơn hàng</span>
+                    </div>
+                </div>
+
+                <!-- HOT DEALS -->
+                <div class="section-title">
+                    <h2>🔥 HOT DEALS</h2>
+                </div>
+                <div class="hot-deals-grid" id="hotDealsGrid">
+                    <!-- Load từ JS -->
+                </div>
+
+                <!-- DANH SÁCH SẢN PHẨM -->
+                <div class="section-title">
+                    <h2>🎮 Tất cả sản phẩm</h2>
+                </div>
+                <div class="products-grid" id="productsGrid">
+                    <!-- Load từ JS -->
+                </div>
+
+                <!-- TOP NẠP THÁNG -->
+                <div class="section-title">
+                    <h2>🏆 Top nạp tháng</h2>
+                </div>
+                <div class="top-deposit" id="topDeposit">
+                    <!-- Load từ JS -->
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ====== TAB: SERVICES ====== -->
+        <section class="tab-content" id="tab-services">
+            <div class="container">
+                <h2>🎮 Mua hàng</h2>
+                <div class="buy-form">
+                    <div class="form-group">
+                        <label>Chọn dịch vụ</label>
+                        <select id="serviceSelect">
+                            <option value="">-- Chọn dịch vụ --</option>
+                            <option value="Mod Skill">Mod Skill - 10.000đ</option>
+                            <option value="Mod Cá">Mod Cá - 20.000đ</option>
+                            <option value="Mod Level">Mod Level - 10.000đ</option>
+                            <option value="Mod Item">Mod Item - 20.000đ</option>
+                            <option value="Mod Pet">Mod Pet - 30.000đ</option>
+                            <option value="Mod Kim Cương">Mod Kim Cương - 30.000đ</option>
+                            <option value="Mod Điếu Hồn">Mod Điếu Hồn - 30.000đ</option>
+                            <option value="Câu Cá Vạn Cân Full">Câu Cá Vạn Cân Full - Liên hệ</option>
+                            <option value="Sniper Arena">Sniper Arena - 15.000đ</option>
+                            <option value="Bản Mod (Tự Mod)">Bản Mod (Tự Mod) - 85.000đ</option>
+                            <option value="Câu Chung (Theo Giờ)">Câu Chung (Theo Giờ) - 20.000đ/giờ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Giá</label>
+                        <input type="text" id="servicePrice" readonly value="0đ" />
+                    </div>
+                    <div class="form-group">
+                        <label>Tài khoản game</label>
+                        <input type="text" id="gameUsername" placeholder="Nhập tài khoản game" />
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu game</label>
+                        <input type="password" id="gamePassword" placeholder="Nhập mật khẩu game" />
+                    </div>
+                    <div class="form-group">
+                        <label>Mã giảm giá (tùy chọn)</label>
+                        <input type="text" id="voucherInput" placeholder="Nhập mã giảm giá" />
+                        <button class="btn-small" id="applyVoucherBtn">Áp dụng</button>
+                        <span id="voucherResult"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="orderNote" placeholder="Ghi chú thêm..."></textarea>
+                    </div>
+                    <button class="btn-primary" id="buyBtn">🛒 Mua ngay</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== TAB: HISTORY ====== -->
+        <section class="tab-content" id="tab-history">
+            <div class="container">
+                <h2>📜 Lịch sử giao dịch</h2>
+                <div class="history-tabs">
+                    <button class="history-tab active" data-history="orders">Đơn hàng</button>
+                    <button class="history-tab" data-history="deposits">Nạp tiền</button>
+                    <button class="history-tab" data-history="cards">Thẻ cào</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- Load từ JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== TAB: TICKETS ====== -->
+        <section class="tab-content" id="tab-tickets">
+            <div class="container">
+                <h2>🎫 Hỗ trợ</h2>
+                <button class="btn-primary" id="newTicketBtn">➕ Tạo ticket mới</button>
+                <div class="ticket-list" id="ticketList">
+                    <!-- Load từ JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== TAB: DASHBOARD ====== -->
+        <section class="tab-content" id="tab-dashboard">
+            <div class="container">
+                <h2>📊 Dashboard cá nhân</h2>
+                <div class="dashboard-stats" id="dashboardStats">
+                    <!-- Load từ JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ====== CHAT WIDGET ====== -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-bubble" id="chatBubble">
+            💬
+            <span class="chat-pulse"></span>
+        </div>
+        <div class="chat-box" id="chatBox">
+            <div class="chat-box-header">
+                <span>📞 Liên hệ</span>
+                <button class="chat-close" id="chatClose">✕</button>
+            </div>
+            <div class="chat-box-body">
+                <a href="https://zalo.me/0564721862" target="_blank" class="chat-btn zalo">💬 Zalo</a>
+                <a href="https://t.me/ngonthe666" target="_blank" class="chat-btn telegram">✈️ Telegram</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== MODAL ====== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">Thông báo</span>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Nội dung động -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary modal-confirm" id="modalConfirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== TOAST ====== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ====== SCRIPTS ====== -->
+    <script src="./lang.js"></script>
+    <script src="./app.js"></script>
+
+</body>
+              </html>
